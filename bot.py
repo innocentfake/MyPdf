@@ -7,7 +7,7 @@ import uvicorn
 from config import API_ID, API_HASH, BOT_TOKEN
 
 # Initialize Telegram Bot
-app = Client("pdf_compressor_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
+app = Client("@Pdf_sectbot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
 # FastAPI Web Server (Required for Render Deployment)
 web_server = FastAPI()
@@ -58,7 +58,7 @@ async def about_command(client, message):
         "🔹 Compress PDF files with high efficiency.\n"
         "🔹 Supports different compression levels.\n\n"
         "👨‍💻 Developed by: @LetsChatbro\n"
-        "📡 Hosted on Render\n"
+        "🤩 Main Channel: @Manga_Sect\n"
         "⚡ Fast & Free to use!"
     )
 
