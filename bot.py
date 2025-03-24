@@ -6,8 +6,8 @@ from fastapi import FastAPI
 import uvicorn
 from config import API_ID, API_HASH, BOT_TOKEN
 
-# Initialize Telegram Bot
-app = Client(api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
+# Initialize Telegram Bot (Fix: Added session name)
+app = Client("pdf_compressor", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
 # FastAPI Web Server (Required for Render Deployment)
 web_server = FastAPI()
