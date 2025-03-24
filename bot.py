@@ -7,7 +7,7 @@ import uvicorn
 from config import API_ID, API_HASH, BOT_TOKEN
 
 # Initialize Telegram Bot
-app = Client("@Pdf_sectbot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
+app = Client(api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
 # FastAPI Web Server (Required for Render Deployment)
 web_server = FastAPI()
@@ -85,16 +85,15 @@ async def pdf_handler(client, message):
     os.remove(compressed_pdf_path)
 
 # Start Telegram Bot & Web Server for Render
-async def main():
-    async def main():
-    await app.start()  # ✅ Correct indentation
+async def start_bot():
+    await app.start()
     print("Bot started!")
+    
     config = uvicorn.Config(web_server, host="0.0.0.0", port=10000)
     server = uvicorn.Server(config)
+    
     await server.serve()
     await app.stop()
 
-
-
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.run(start_bot())
