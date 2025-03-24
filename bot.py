@@ -1,50 +1,37 @@
 import os
 import fitz  # PyMuPDF
+import asyncio
 from pyrogram import Client, filters
 from config import API_ID, API_HASH, BOT_TOKEN
+from fastapi import FastAPI
+import uvicorn
 
-# Initialize bot
+# Initialize Telegram bot
 app = Client("pdf_compressor_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
+
+# Create FastAPI instance (dummy server for Render)
+web_server = FastAPI()
+
+@web_server.get("/")
+async def home():
+    return {"status": "Bot is running!"}
 
 # Ensure downloads folder exists
 if not os.path.exists("downloads"):
     os.makedirs("downloads")
 
-# Function to compress PDF with different quality levels
+# Function to compress PDFs
 def compress_pdf(input_path, output_path, quality):
     doc = fitz.open(input_path)
-
-    if quality == "low":
-        doc.save(output_path, garbage=4, deflate=True, clean=True, compress=9)
-    elif quality == "medium":
-        doc.save(output_path, garbage=3, deflate=True, clean=True, compress=5)
-    else:  # high quality (default)
-        doc.save(output_path, garbage=2, deflate=True, clean=True, compress=3)
-
+    doc.save(output_path, garbage=4, deflate=True, clean=True, compress=9 if quality == "low" else 5)
     doc.close()
 
-# Handle PDF files sent by users
+# Handle PDF uploads
 @app.on_message(filters.document)
 async def pdf_handler(client, message):
-    # Check if the document is a PDF
     if not message.document.file_name.endswith(".pdf"):
         await message.reply_text("❌ Please send a valid PDF file.")
         return
-
-    await message.reply_text(
-        "📥 Send a number to choose compression level:\n\n"
-        "1️⃣ Low (max compression, lower quality)\n"
-        "2️⃣ Medium (balanced compression)\n"
-        "3️⃣ High (minimum compression, best quality)\n\n"
-        "Reply with 1, 2, or 3."
-    )
-
-    # Wait for user reply
-    user_reply = await app.listen(message.chat.id, timeout=30)
-    quality_choice = user_reply.text.strip()
-
-    quality_map = {"1": "low", "2": "medium", "3": "high"}
-    quality = quality_map.get(quality_choice, "medium")  # Default to medium
 
     await message.reply_text("📥 Downloading your PDF...")
 
@@ -54,14 +41,21 @@ async def pdf_handler(client, message):
     await message.download(pdf_path)
 
     await message.reply_text("🔄 Compressing your PDF...")
-    compress_pdf(pdf_path, compressed_pdf_path, quality)
+    compress_pdf(pdf_path, compressed_pdf_path, "medium")
 
-    new_filename = f"compressed_{message.document.file_name}"
-    await message.reply_document(compressed_pdf_path, caption="Here is your compressed PDF 📄✨", file_name=new_filename)
+    await message.reply_document(compressed_pdf_path, caption="Here is your compressed PDF 📄✨")
 
-    # Clean up files
     os.remove(pdf_path)
     os.remove(compressed_pdf_path)
 
-# Run the bot
-app.run()
+# Start both Telegram bot and FastAPI server
+async def main():
+    await app.start()
+    print("Bot started!")
+    config = uvicorn.Config(web_server, host="0.0.0.0", port=10000)
+    server = uvicorn.Server(config)
+    await server.serve()
+    await app.stop()
+
+if __name__ == "__main__":
+    asyncio.run(main())
