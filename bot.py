@@ -87,12 +87,13 @@ async def pdf_handler(client, message):
 # Start Telegram Bot & Web Server for Render
 async def main():
     async def main():
-    await app.start()
+    await app.start()  # ✅ Correct indentation
     print("Bot started!")
     config = uvicorn.Config(web_server, host="0.0.0.0", port=10000)
-    server = uvicorn.Server(config)  # ✅ Corrected indentation
+    server = uvicorn.Server(config)
     await server.serve()
     await app.stop()
+
 
 
 if __name__ == "__main__":
