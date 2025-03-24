@@ -1,15 +1,15 @@
 import os
-import fitz  # PyMuPDF
+import fitz  # PyMuPDF for PDF compression
 import asyncio
 from pyrogram import Client, filters
-from config import API_ID, API_HASH, BOT_TOKEN
 from fastapi import FastAPI
 import uvicorn
+from config import API_ID, API_HASH, BOT_TOKEN
 
-# Initialize Telegram bot
+# Initialize Telegram Bot
 app = Client("pdf_compressor_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
-# Create FastAPI instance (dummy server for Render)
+# FastAPI Web Server (Required for Render Deployment)
 web_server = FastAPI()
 
 @web_server.get("/")
@@ -21,12 +21,48 @@ if not os.path.exists("downloads"):
     os.makedirs("downloads")
 
 # Function to compress PDFs
-def compress_pdf(input_path, output_path, quality):
+def compress_pdf(input_path, output_path, quality="medium"):
     doc = fitz.open(input_path)
     doc.save(output_path, garbage=4, deflate=True, clean=True, compress=9 if quality == "low" else 5)
     doc.close()
 
-# Handle PDF uploads
+# Start Command
+@app.on_message(filters.command("start"))
+async def start_command(client, message):
+    await message.reply_text(
+        "👋 Hello! I am a PDF Compressor Bot. 📄\n"
+        "Just send me a **PDF file**, and I'll compress it for you! 📉\n\n"
+        "Use /help for more details."
+    )
+
+# Help Command
+@app.on_message(filters.command("help"))
+async def help_command(client, message):
+    await message.reply_text(
+        "📌 **How to Use This Bot:**\n"
+        "1️⃣ Send me a **PDF file**.\n"
+        "2️⃣ I will **compress** the file and send it back.\n"
+        "3️⃣ If the file is too large, I may take some time to process.\n\n"
+        "🔹 Available Commands:\n"
+        "/start - Welcome Message\n"
+        "/compress - Upload PDF for compression\n"
+        "/about - Info about this bot\n\n"
+        "🚀 Send a **PDF now**, and I'll compress it!"
+    )
+
+# About Command
+@app.on_message(filters.command("about"))
+async def about_command(client, message):
+    await message.reply_text(
+        "🤖 **PDF Compressor Bot**\n"
+        "🔹 Compress PDF files with high efficiency.\n"
+        "🔹 Supports different compression levels.\n\n"
+        "👨‍💻 Developed by: @LetsChatbro\n"
+        "📡 Hosted on Render\n"
+        "⚡ Fast & Free to use!"
+    )
+
+# Handle PDF Uploads & Compression
 @app.on_message(filters.document)
 async def pdf_handler(client, message):
     if not message.document.file_name.endswith(".pdf"):
@@ -48,7 +84,7 @@ async def pdf_handler(client, message):
     os.remove(pdf_path)
     os.remove(compressed_pdf_path)
 
-# Start both Telegram bot and FastAPI server
+# Start Telegram Bot & Web Server for Render
 async def main():
     await app.start()
     print("Bot started!")
