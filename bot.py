@@ -24,8 +24,13 @@ def compress_pdf(input_path, output_path, quality):
     doc.close()
 
 # Handle PDF files sent by users
-@app.on_message(filters.document & filters.file_extension("pdf"))
+@app.on_message(filters.document)
 async def pdf_handler(client, message):
+    # Check if the document is a PDF
+    if not message.document.file_name.endswith(".pdf"):
+        await message.reply_text("❌ Please send a valid PDF file.")
+        return
+
     await message.reply_text(
         "📥 Send a number to choose compression level:\n\n"
         "1️⃣ Low (max compression, lower quality)\n"
