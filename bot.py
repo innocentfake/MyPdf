@@ -88,7 +88,10 @@ async def pdf_handler(client, message):
 async def main():
     await app.start()
     print("Bot started!")
-    config = uvicorn.Config(web_server, host="0.0.0.0", port=10000)
+    import os
+PORT = int(os.environ.get("PORT", 8080))  
+config = uvicorn.Config(web_server, host="0.0.0.0", port=PORT)
+
     server = uvicorn.Server(config)
     await server.serve()
     await app.stop()
